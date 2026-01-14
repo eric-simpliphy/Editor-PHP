@@ -225,6 +225,9 @@ class Editor extends Ext
 	/** @var string Action name allowing for configuration */
 	private $_actionName = 'action';
 
+	/** @var bool Skip count queries for server-side processing */
+	private $_skipCountQuery = false;
+
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Public methods
 	 */
@@ -241,6 +244,11 @@ class Editor extends Ext
 	public function actionName($_ = null)
 	{
 		return $this->_getSet($this->_actionName, $_);
+	}
+
+	public function skipCountQuery($_ = null)
+	{
+		return $this->_getSet($this->_skipCountQuery, $_);
 	}
 
 	/**
@@ -1580,6 +1588,15 @@ class Editor extends Ext
 		$this->_ssp_limit($query, $http);
 		$this->_ssp_sort($query, $http);
 		$this->_ssp_filter($query, $http);
+
+		// Skip count queries if configured
+		if ($this->_skipCountQuery) {
+			return [
+				'draw' => (int) $http['draw'],
+				'recordsTotal' => null,
+				'recordsFiltered' => null,
+			];
+		}
 
 		// Get the number of rows in the result set
 		$ssp_set_count_query = $this->_db
